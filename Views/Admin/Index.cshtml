@@ -1,0 +1,121 @@
+@model MiniHelpDesk.ViewModels.AdminDashboardViewModel
+
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>
+                <i class="bi bi-speedometer2"></i> Admin Dashboard
+            </h2>
+            <p class="text-muted">Hoşgeldiniz, sistem genel durumunu buradan takip edebilirsiniz.</p>
+        </div>
+    </div>
+
+    <!-- Toplam Ticket -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <a asp-action="Tickets" class="text-decoration-none">
+                <div class="card shadow-sm border-primary h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-ticket-detailed text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h3 class="card-title text-primary">@Model.TotalTickets</h3>
+                        <p class="card-text text-muted">Toplam Ticket</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Açık Ticket -->
+        <div class="col-md-3">
+            <a asp-action="Tickets" asp-route-answerStatus="unanswered" class="text-decoration-none">
+                <div class="card shadow-sm border-success h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                        </div>
+                        <h3 class="card-title text-success">@Model.OpenTickets</h3>
+                        <p class="card-text text-muted">Açık Ticket</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Kapalı Ticket -->
+        <div class="col-md-3">
+            <a asp-action="Tickets" class="text-decoration-none">
+                <div class="card shadow-sm border-secondary h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-x-circle text-secondary" style="font-size: 3rem;"></i>
+                        </div>
+                        <h3 class="card-title text-secondary">@Model.ClosedTickets</h3>
+                        <p class="card-text text-muted">Kapalı Ticket</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Toplam Kullanıcı -->
+        <div class="col-md-3">
+            <a asp-action="Users" class="text-decoration-none">
+                <div class="card shadow-sm border-info h-100 hover-card">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-people text-info" style="font-size: 3rem;"></i>
+                        </div>
+                        <h3 class="card-title text-info">@Model.TotalUsers</h3>
+                        <p class="card-text text-muted">Toplam Kullanıcı</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Hızlı Erişim Butonları -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">Hızlı Erişim</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a asp-action="Tickets" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-list-ul"></i> Tüm Ticket'ları Görüntüle
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a asp-action="Categories" class="btn btn-warning btn-lg w-100">
+                                <i class="bi bi-folder"></i> Kategorileri Yönet
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a asp-action="Tickets" asp-route-answerStatus="unanswered" class="btn btn-danger btn-lg w-100">
+                                <i class="bi bi-exclamation-triangle"></i> Cevaplanmamış Ticket'lar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        cursor: pointer;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+    }
+</style>

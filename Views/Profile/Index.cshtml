@@ -1,0 +1,175 @@
+@model MiniHelpDesk.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Profil Bilgileri -->
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-circle"></i> Profil Bilgilerim
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Kullanıcı Adı:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span class="text-muted">@Model.UserName</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>E-posta:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span class="text-muted">
+                                @if (string.IsNullOrEmpty(Model.Email))
+                                {
+                                    <em>Belirtilmemiş</em>
+                                }
+                                else
+                                {
+                                    @Model.Email
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h5 class="mb-3">Ticket İstatistiklerim</h5>
+
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-icon text-primary">
+                                    <i class="bi bi-ticket-detailed" style="font-size: 2rem;"></i>
+                                </div>
+                                <h3 class="text-primary">@Model.TotalTickets</h3>
+                                <p class="text-muted">Toplam Ticket</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-icon text-success">
+                                    <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                                </div>
+                                <h3 class="text-success">@Model.OpenTickets</h3>
+                                <p class="text-muted">Açık Ticket</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-icon text-secondary">
+                                    <i class="bi bi-x-circle" style="font-size: 2rem;"></i>
+                                </div>
+                                <h3 class="text-secondary">@Model.ClosedTickets</h3>
+                                <p class="text-muted">Kapalı Ticket</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- İşlemler -->
+        <div class="col-md-4">
+            <div class="card shadow mb-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Profil İşlemleri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" class="btn btn-warning">
+                            <i class="bi bi-pencil-square"></i> Profili Düzenle
+                        </a>
+
+                        <a asp-action="ChangePassword" class="btn btn-info text-white">
+                            <i class="bi bi-key"></i> Şifre Değiştir
+                        </a>
+
+                        <a asp-controller="Ticket" asp-action="Index" class="btn btn-primary">
+                            <i class="bi bi-ticket-detailed"></i> Ticket'larıma Git
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hesap Silme -->
+            <div class="card shadow border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">Tehlikeli Alan</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">
+                        Hesabınızı silmek istiyorsanız aşağıdaki butona tıklayın. 
+                        <strong>Bu işlem geri alınamaz!</strong>
+                    </p>
+                    <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="bi bi-trash"></i> Hesabı Sil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Hesabı Sil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="DeleteAccount" method="post">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Uyarı!</strong> Bu işlem geri alınamaz. Tüm ticket'larınız silinecektir.
+                    </div>
+                    <p>Hesabınızı silmek için kullanıcı adınızı yazın:</p>
+                    <input type="text" name="confirmUsername" class="form-control" placeholder="@Model.UserName" required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger">Hesabı Sil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    .stat-card {
+        padding: 20px;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+    .stat-icon {
+        margin-bottom: 10px;
+    }
+</style>

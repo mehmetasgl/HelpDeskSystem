@@ -1,0 +1,75 @@
+@model List<MiniHelpDesk.Models.Notification>
+
+@{
+    ViewData["Title"] = "Bildirimler";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-bell"></i> Bildirimlerim
+        </h2>
+        @if (Model.Any(n => !n.IsRead))
+        {
+            <form asp-action="MarkAllAsRead" method="post">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-all"></i> Tümünü Okundu İşaretle
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (Model.Any())
+    {
+        <div class="list-group">
+            @foreach (var notification in Model)
+            {
+                <div class="list-group-item @(notification.IsRead ? "" : "list-group-item-primary")">
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            @if (!notification.IsRead)
+                            {
+                                <span class="badge bg-danger me-2">Yeni</span>
+                            }
+                            <p class="mb-1">@notification.Message</p>
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> @notification.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                            </small>
+                        </div>
+                        <div class="btn-group" role="group">
+                            @if (!string.IsNullOrEmpty(notification.Link))
+                            {
+                                <a href="@notification.Link" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Görüntüle
+                                </a>
+                            }
+                            @if (!notification.IsRead)
+                            {
+                                <form asp-action="MarkAsRead" asp-route-id="@notification.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Okundu işaretle">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                </form>
+                            }
+                            <form asp-action="Delete" asp-route-id="@notification.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Sil">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info text-center">
+            <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+            <h4>Henüz bildirim yok</h4>
+            <p>Yeni bildirimler burada görünecek.</p>
+        </div>
+    }
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">

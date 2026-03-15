@@ -1,0 +1,214 @@
+@model MiniHelpDesk.ViewModels.UserDetailsViewModel
+
+@{
+    ViewData["Title"] = "Kullanıcı Detayı";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sol: Kullanıcı Bilgileri -->
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-circle"></i> @Model.UserName
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Kullanıcı Adı:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span class="text-muted">@Model.UserName</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>E-posta:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span class="text-muted">
+                                @if (string.IsNullOrEmpty(Model.Email))
+                                {
+                                    <em>Belirtilmemiş</em>
+                                }
+                                else
+                                {
+                                    @Model.Email
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <strong>Roller:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            @foreach (var role in Model.Roles)
+                            {
+                                if (role == "Admin")
+                                {
+                                    <span class="badge bg-danger me-1">@role</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary me-1">@role</span>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h5 class="mb-3">Ticket İstatistikleri</h5>
+
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <h3 class="text-primary">@Model.TotalTickets</h3>
+                                <p class="text-muted">Toplam Ticket</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <h3 class="text-success">@Model.OpenTickets</h3>
+                                <p class="text-muted">Açık Ticket</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <h3 class="text-secondary">@Model.ClosedTickets</h3>
+                                <p class="text-muted">Kapalı Ticket</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kullanıcının Ticket'ları -->
+            @if (Model.RecentTickets.Any())
+            {
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Kullanıcının Ticket'ları</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Başlık</th>
+                                        <th>Kategori</th>
+                                        <th>Durum</th>
+                                        <th>Tarih</th>
+                                        <th>İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var ticket in Model.RecentTickets)
+                                    {
+                                        <tr>
+                                            <td>@ticket.Title</td>
+                                            <td><span class="badge bg-info">@ticket.Category.Name</span></td>
+                                            <td>
+                                                @if (ticket.Status == "Open")
+                                                {
+                                                    <span class="badge bg-success">Açık</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Kapalı</span>
+                                                }
+                                            </td>
+                                            <td><small>@ticket.CreatedAt.ToString("dd.MM.yyyy")</small></td>
+                                            <td>
+                                                <a asp-action="TicketDetail" asp-route-id="@ticket.Id" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> Görüntüle
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    Bu kullanıcının henüz ticket'ı bulunmamaktadır.
+                </div>
+            }
+        </div>
+
+        <!-- İşlemler -->
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">İşlemler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Users" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Kullanıcı Listesine Dön
+                        </a>
+
+                        @if (!Model.Roles.Contains("Admin"))
+                        {
+                            <button type="button" 
+                                    class="btn btn-danger" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteUserModal">
+                                <i class="bi bi-trash"></i> Kullanıcıyı Sil
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-secondary" disabled>
+                                <i class="bi bi-shield-lock"></i> Admin Silinemez
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Silme -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Kullanıcıyı Sil</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="DeleteUser" asp-route-id="@Model.Id" method="post">
+<div class="modal-body">
+<div class="alert alert-warning">
+<i class="bi bi-exclamation-triangle"></i>
+<strong>Uyarı!</strong> Bu işlem geri alınamaz.
+</div>
+<p><strong>@Model.UserName</strong> kullanıcısını silmek istediğinize emin misiniz?</p>
+<p class="text-muted">Kullanıcının tüm ticket'ları (@Model.TotalTickets adet) ve bildirimleri silinecektir.</p>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+<button type="submit" class="btn btn-danger">Kullanıcıyı Sil</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<style>
+    .stat-card {
+        padding: 20px;
+        border-radius: 8px;
+        background: #f8f9fa;
+    }
+</style>

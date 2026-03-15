@@ -1,0 +1,59 @@
+@model MiniHelpDesk.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Giriş Yap";
+    var loginType = ViewBag.LoginType as string;
+    var isAdmin = loginType == "admin";
+    var cardClass = isAdmin ? "border-danger" : "border-primary";
+    var btnClass = isAdmin ? "btn-danger" : "btn-primary";
+    var title = isAdmin ? "Admin Girişi" : "Kullanıcı Girişi";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow @cardClass">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">@title</h2>
+                
+                <form asp-action="Login" method="post">
+                    <input type="hidden" name="type" value="@loginType" />
+                    
+                    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="UserName" class="form-label"></label>
+                        <input asp-for="UserName" class="form-control" />
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label"></label>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn @btnClass btn-lg">Giriş Yap</button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    @if (!isAdmin)
+                    {
+                        <p>Hesabınız yok mu? <a asp-action="Register">Kayıt Ol</a></p>
+                    }
+                    <p><a asp-action="SelectLoginType">← Giriş Türü Seçimine Dön</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

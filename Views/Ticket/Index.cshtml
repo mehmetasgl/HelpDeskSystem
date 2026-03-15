@@ -1,0 +1,256 @@
+@model MiniHelpDesk.ViewModels.TicketIndexViewModel
+
+@{
+    ViewData["Title"] = "Ticket Yönetimi";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="container-fluid">
+    <h2 class="mb-4">Destek Taleplerim</h2>
+
+    <!-- Üst Alan Action Bar + İstatistikler -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-center mb-3">
+                <!-- Sol taraf Buton -->
+                <div class="col-md-3">
+                    <a asp-action="Create" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-plus-circle"></i> Yeni Ticket Oluştur
+                    </a>
+                </div>
+
+                <!-- Orta İstatistikler -->
+                <div class="col-md-6">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="stat-box">
+                                <h4 class="text-primary mb-0">@Model.TotalTickets</h4>
+                                <small class="text-muted">Toplam Ticket</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-box">
+                                <h4 class="text-success mb-0">@Model.OpenTickets</h4>
+                                <small class="text-muted">Açık</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="stat-box">
+                                <h4 class="text-secondary mb-0">@Model.ClosedTickets</h4>
+                                <small class="text-muted">Kapalı</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sağ taraf Kategori Filtresi -->
+                <div class="col-md-3">
+                    <form method="get" asp-action="Index" id="categoryForm">
+                        <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+                        <select name="categoryId" class="form-select" onchange="document.getElementById('categoryForm').submit()">
+                            <option value="">Tüm Kategoriler</option>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.Id" selected="@(Model.SelectedCategoryId == category.Id)">
+                                    @category.Name
+                                </option>
+                            }
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Arama Kutusu -->
+            <div class="row">
+                <div class="col-md-12">
+                    <form method="get" asp-action="Index" class="d-flex gap-2">
+                        <input type="hidden" name="categoryId" value="@Model.SelectedCategoryId" />
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" 
+                                   name="searchTerm" 
+                                   class="form-control" 
+                                   placeholder="Ticket başlığı veya açıklamasında ara..." 
+                                   value="@Model.SearchTerm" />
+                            <button type="submit" class="btn btn-primary">Ara</button>
+                            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
+                            {
+                                <a asp-action="Index" asp-route-categoryId="@Model.SelectedCategoryId" class="btn btn-secondary">
+                                    <i class="bi bi-x-circle"></i> Temizle
+                                </a>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Aktif Filtreler Gösterimi -->
+            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || Model.SelectedCategoryId.HasValue)
+            {
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="alert alert-info mb-0 d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-funnel"></i> Aktif Filtreler:
+                                @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
+                                {
+                                    <span class="badge bg-primary">Arama: "@Model.SearchTerm"</span>
+                                }
+                                @if (Model.SelectedCategoryId.HasValue)
+                                {
+                                    var selectedCategory = Model.Categories.FirstOrDefault(c => c.Id == Model.SelectedCategoryId.Value);
+                                    if (selectedCategory != null)
+                                    {
+                                        <span class="badge bg-info">Kategori: @selectedCategory.Name</span>
+                                    }
+                                }
+                            </div>
+                            <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+                                Tüm Filtreleri Temizle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Alt Alan Ticket Tablosu -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (Model.Tickets.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Öncelik</th> <!-- YENİ -->
+            <th>Başlık</th>
+            <th>Kategori</th>
+            <th>Durum</th>
+            <th>Oluşturulma Tarihi</th>
+            <th>Cevap Durumu</th>
+            <th class="text-center">İşlemler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ticket in Model.Tickets)
+        {
+            <tr class="@(ticket.AdminAnswer != null ? "table-success" : "")">
+                <!-- Öncelik Badge (YENİ) -->
+                <td>
+                    @if (ticket.Priority == "High")
+                    {
+                        <span class="badge bg-danger">🔴 Yüksek</span>
+                    }
+                    else if (ticket.Priority == "Medium")
+                    {
+                        <span class="badge bg-warning text-dark">🟡 Orta</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">🟢 Düşük</span>
+                    }
+                </td>
+                <td>
+                    <strong>@ticket.Title</strong>
+                </td>
+                <td>
+                    <span class="badge bg-info">@ticket.Category.Name</span>
+                </td>
+                <td>
+                    @if (ticket.Status == "Open")
+                    {
+                        <span class="badge bg-success">Açık</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Kapalı</span>
+                    }
+                </td>
+                <td>
+                    <small>@ticket.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                </td>
+                <td>
+                    @if (ticket.AdminAnswer != null)
+                    {
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i> Cevaplandı
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-clock"></i> Bekliyor
+                        </span>
+                    }
+                </td>
+                <td class="text-center">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a asp-action="Details" asp-route-id="@ticket.Id" 
+                           class="btn btn-outline-primary" title="Detay">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@ticket.Id" 
+                           class="btn btn-outline-warning" title="Düzenle">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        @if (ticket.Status == "Open")
+                        {
+                            <a asp-action="Edit" asp-route-id="@ticket.Id" 
+                            class="btn btn-outline-warning" title="Düzenle">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-secondary" disabled title="Kapalı ticket düzenlenemez">
+                                <i class="bi bi-lock"></i>
+                            </button>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
+                    {
+                        <h5>Arama sonucu bulunamadı</h5>
+                        <p>"@Model.SearchTerm" için ticket bulunamadı.</p>
+                    }
+                    else
+                    {
+                        <h5>Henüz ticket bulunmuyor</h5>
+                        <p>Yeni bir destek talebi oluşturmak için yukarıdaki butona tıklayın.</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<style>
+    .stat-box {
+        padding: 10px;
+    }
+    .table-success {
+        background-color: #d1f2eb !important;
+    }
+</style>
